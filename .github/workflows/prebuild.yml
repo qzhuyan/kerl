@@ -1,0 +1,105 @@
+name: prebuild
+
+on:
+  push:
+  workflow_dispatch:
+    inputs:
+      dryrun:
+        default: true
+        required: false
+        type: boolean
+
+jobs:
+  linux:
+    runs-on: ${{ matrix.os }}
+    needs: Release
+    strategy:
+      fail-fast: false
+      matrix:
+        otp:
+          #- 23.3.4.14
+          #- 24.3.4.6
+          - 23.3.4.18
+          #- 25.1.2
+        os:
+          - ubuntu-22.04
+          - ubuntu-20.04
+        type:
+          - otp
+          - "otp-lttng"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Fake Build ${{ matrix.otp  }}
+        if: ${{ inputs.dryrun }}
+        env:
+          otp_vsn: ${{ matrix.otp }}
+          os: ${{ matrix.os }}
+          type: ${{ matrix.type }}
+        run: |
+          ./kerl update releases
+          cp ./kerl $HOME/.kerl/
+          tar czvf "${type}-${otp_vsn}-${os}.tar.gz" -C $HOME .kerl
+
+      - name: Build ${{ matrix.otp  }}
+        if: ${{ ! inputs.dryrun }}
+        env:
+          otp_vsn: ${{ matrix.otp }}
+          os: ${{ matrix.os }}
+          type: ${{ matrix.type }}
+        run: |
+          export KERL_RELEASE_TARGET="debug asan opt gcov gprof valgrind lcnt"
+          export KERL_CONFIGURE_OPTIONS="--disable-hipe --with-odbc"
+
+          if [[ ${type} == "otp-lttng" ]]; then
+            sudo apt-add-repository ppa:lttng/stable-2.13
+            sudo apt-get update
+            sudo apt-get install -y lttng-tools babeltrace liblttng-ust-dev lttng-modules-dkms-
+            export KERL_CONFIGURE_OPTIONS="--with-dynamic-trace=lttng ${KERL_CONFIGURE_OPTIONS}"
+          fi
+
+          ./kerl update releases
+          ./kerl build "${otp_vsn}" "${otp_vsn}"
+
+          cp ./kerl $HOME/.kerl/
+
+          tar czvf "${type}-${otp_vsn}-${os}.tar.gz" -C $HOME .kerl
+
+      - uses: actions/upload-artifact@v2
+        #if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: packages
+          path: |
+            *.tar.gz
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          upload_url: ${{ needs.Release.outputs.upload_url  }}
+          asset_path: "${{ matrix.type }}-${{ matrix.otp }}-${{ matrix.os }}.tar.gz"
+          asset_name: "${{ matrix.type }}-${{ matrix.otp }}-${{ matrix.os }}.tar.gz"
+          asset_content_type: application/zip
+
+  Release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+          otp_vsn: ${{ matrix.otp }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: OTP-prebuild ${{ github.run_id }} Released
+          body: ${{ github.ref }} Released
+          draft: true
+          prerelease: true
+
+
