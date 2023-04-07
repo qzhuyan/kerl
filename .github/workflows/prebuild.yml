@@ -65,6 +65,20 @@ jobs:
 
           tar czvf "${type}-${otp_vsn}-${os}.tar.gz" -C $HOME .kerl
 
+      - name: cat failed build log
+        if: failure()
+        run: |
+           cat ~/.kerl/builds/*/*.log
+
+      - name: Archive failed build log
+        if: failure()
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: build-log-${{matrix.otp}}-${{matrix.os}}-${{matrix.type}}
+          path: ~/.kerl/builds/${{matrix.otp}}/otp_build_${{matrix.otp}}.log
+          retention-days: 1
+
       - uses: actions/upload-artifact@v2
         #if: startsWith(github.ref, 'refs/tags/')
         with:
