@@ -52,7 +52,7 @@ jobs:
           export KERL_CONFIGURE_OPTIONS="--disable-hipe --with-odbc"
 
           if [[ ${type} == "otp-lttng" ]]; then
-            sudo apt-add-repository ppa:lttng/stable-2.13
+            sudo apt-add-repository ppa:lttng/stable-2.12
             sudo apt-get update
             sudo apt-get install -y lttng-tools babeltrace liblttng-ust-dev lttng-modules-dkms-
             export KERL_CONFIGURE_OPTIONS="--with-dynamic-trace=lttng ${KERL_CONFIGURE_OPTIONS}"
