@@ -73,7 +73,6 @@ jobs:
       - name: Archive failed build log
         if: failure()
         uses: actions/upload-artifact@v2
-        if: failure()
         with:
           name: build-log-${{matrix.otp}}-${{matrix.os}}-${{matrix.type}}
           path: ~/.kerl/builds/${{matrix.otp}}/otp_build_${{matrix.otp}}.log
