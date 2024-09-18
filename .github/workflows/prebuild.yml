@@ -20,7 +20,7 @@ jobs:
           #- 24.3.4.6
 #          - 23.3.4.18
           #- 25.3
-          - 26.2.1
+          - 26.2.5.3
         os:
           - ubuntu-22.04
           #- ubuntu-20.04
@@ -29,7 +29,7 @@ jobs:
           - "otp-lttng"
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Fake Build ${{ matrix.otp  }}
         if: ${{ inputs.dryrun }}
@@ -55,7 +55,11 @@ jobs:
           if [[ ${type} == "otp-lttng" ]]; then
             sudo apt-add-repository ppa:lttng/stable-2.12
             sudo apt-get update
-            sudo apt-get install -y lttng-tools babeltrace liblttng-ust-dev lttng-modules-dkms-
+            sudo apt-get install -y lttng-tools babeltrace liblttng-ust-dev lttng-modules-dkms- \
+                   git curl libssl-dev make automake autoconf libncurses-dev gcc g++ default-jdk \
+                   unixodbc-dev libwxgtk3.2-dev libwxgtk-webview3.2-dev xsltproc \
+                   libxml2-utils libsctp-dev lksctp-tools software-properties-common shellcheck \
+                   shfmt
             export KERL_CONFIGURE_OPTIONS="--with-dynamic-trace=lttng ${KERL_CONFIGURE_OPTIONS}"
           fi
 
