@@ -66,9 +66,7 @@ jobs:
           sudo mkdir -p "$target_dir"
           sudo chmod 777 "$target_dir"
           ./kerl update releases
-          bash -x ./kerl build-install "${otp_vsn}" "${type}-${otp_vsn}" "$target_dir"
-          cp ./kerl /home/ubuntu/OTP/
-
+          ./kerl build-install "${otp_vsn}" "${type}-${otp_vsn}" "$target_dir"
           tar czvf "${type}-${otp_vsn}-${os}.tar.gz" "$target_dir"
 
       - name: cat failed build log
