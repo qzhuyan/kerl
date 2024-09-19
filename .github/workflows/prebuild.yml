@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fake Build ${{ matrix.otp  }}
-        if: ${{ inputs.dryrun }}
+        if: ${{ ! inputs.dryrun }}
         env:
           otp_vsn: ${{ matrix.otp }}
           os: ${{ matrix.os }}
@@ -42,7 +42,7 @@ jobs:
           tar czvf "${type}-${otp_vsn}-${os}.tar.gz" -C $HOME .kerl
 
       - name: Build ${{ matrix.otp  }}
-        if: ${{ ! inputs.dryrun }}
+        if: ${{  inputs.dryrun }}
         env:
           otp_vsn: ${{ matrix.otp }}
           os: ${{ matrix.os }}
