@@ -62,14 +62,14 @@ jobs:
             export KERL_CONFIGURE_OPTIONS="--with-dynamic-trace=lttng ${KERL_CONFIGURE_OPTIONS}"
           fi
 
-          target_dir="/home/ubuntu/OTP/${type}-${otp_vsn}"
+          target_dir="$HOME/OTP/${type}-${otp_vsn}"
           sudo mkdir -p "$target_dir"
           sudo chmod 777 "$target_dir"
           ./kerl update releases
           ./kerl build-install "${otp_vsn}" "$target_dir"
           cp ./kerl /home/ubuntu/OTP/
 
-          tar czvf "${type}-${otp_vsn}-${os}.tar.gz" /home/ubuntu/OTP/
+          tar czvf "${type}-${otp_vsn}-${os}.tar.gz" "$target_dir"
 
       - name: cat failed build log
         if: failure()
