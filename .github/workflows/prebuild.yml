@@ -101,15 +101,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           name: kerl otp ${{ github.ref_name }} Released
+          draft: true
+          prerelease: false
+          tag_name: testing
           files: |
             *.tar.gz
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v2
-        with:
-          name: kerl otp ${{ github.ref_name }} Released
-          body: kerl otp  ${{ github.ref_name }} Released
-          files: packages-*
-          draft: false
-          prerelease: false
-          tag_name: testing
