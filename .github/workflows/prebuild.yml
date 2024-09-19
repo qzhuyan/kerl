@@ -90,6 +90,9 @@ jobs:
             *.tar.gz
   release:
     runs-on: ubuntu-latest
+    permissions:
+      checks: read
+      actions: write
     needs:
       - linux
     #if: startsWith(github.ref, 'refs/tags/')
