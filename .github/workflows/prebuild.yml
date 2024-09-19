@@ -93,6 +93,7 @@ jobs:
     permissions:
       checks: read
       actions: write
+      contents: write
     needs:
       - linux
     #if: startsWith(github.ref, 'refs/tags/')
