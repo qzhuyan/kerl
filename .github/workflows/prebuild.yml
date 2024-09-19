@@ -56,7 +56,7 @@ jobs:
             sudo apt-get update
             sudo apt-get install -y lttng-tools babeltrace liblttng-ust-dev lttng-modules-dkms- \
                    git curl libssl-dev make automake autoconf libncurses-dev gcc g++ default-jdk \
-                   unixodbc-dev libwxgtk3.2-dev libwxgtk-webview3.2-dev xsltproc \
+                   unixodbc-dev \
                    libxml2-utils libsctp-dev lksctp-tools software-properties-common shellcheck \
                    shfmt
             export KERL_CONFIGURE_OPTIONS="--with-dynamic-trace=lttng ${KERL_CONFIGURE_OPTIONS}"
