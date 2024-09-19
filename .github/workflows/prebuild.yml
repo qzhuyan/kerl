@@ -62,7 +62,8 @@ jobs:
             export KERL_CONFIGURE_OPTIONS="--with-dynamic-trace=lttng ${KERL_CONFIGURE_OPTIONS}"
           fi
 
-          mkdir -p /home/ubuntu/OTP/
+          sudo mkdir -p /home/ubuntu/OTP/
+          sudo chmod 777 /home/ubuntu/OTP/
           ./kerl update releases
           ./kerl build-install "${otp_vsn}" "/home/ubuntu/OTP/${type}-${otp_vsn}"
           cp ./kerl /home/ubuntu/OTP/
