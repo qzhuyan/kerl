@@ -26,6 +26,13 @@ jobs:
         type:
           - otp
           - "otp-lttng"
+        exclude:
+          - type: "otp-llttng"
+            os: ubuntu-22.04
+            otp: 24.3.4.17
+          - type: "otp-llttng"
+            os: ubuntu-22.04
+            otp: 25.3.2.13
     steps:
       - name: Checkout
         uses: actions/checkout@v4
