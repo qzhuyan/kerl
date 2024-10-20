@@ -1,0 +1,123 @@
+name: prebuild
+
+on:
+  workflow_dispatch:
+    inputs:
+      dryrun:
+        default: false
+        required: false
+        type: boolean
+      tag_name:
+        default: test
+        required: false
+        type: string
+
+jobs:
+  linux:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        otp:
+          - 24.3.4.17
+          - 25.3.2.13
+          - 26.2.5.3
+          - 27.1
+        os:
+          - ubuntu-22.04
+          - ubuntu-20.04
+        type:
+          - otp
+          - "otp-lttng"
+        exclude:
+          - type: "otp-lttng"
+            os: ubuntu-22.04
+            otp: 24.3.4.17
+          - type: "otp-lttng"
+            os: ubuntu-22.04
+            otp: 25.3.2.13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fake Build ${{ matrix.otp  }}
+        if: ${{ inputs.dryrun }}
+        env:
+          otp_vsn: ${{ matrix.otp }}
+          os: ${{ matrix.os }}
+          type: ${{ matrix.type }}
+        run: |
+          ./kerl update releases
+          cp ./kerl $HOME/.kerl/
+          tar czvf "${type}-${otp_vsn}-${os}.tar.gz" -C $HOME .kerl
+
+      - name: Build ${{ matrix.otp  }}
+        if: ${{ ! inputs.dryrun }}
+        env:
+          otp_vsn: ${{ matrix.otp }}
+          os: ${{ matrix.os }}
+          type: ${{ matrix.type }}
+        run: |
+          export KERL_RELEASE_TARGET="debug asan opt gcov gprof valgrind lcnt"
+          export KERL_CONFIGURE_OPTIONS="--disable-hipe --with-odbc"
+
+          sudo apt install -y valgrind
+          if [[ ${type} == "otp-lttng" ]]; then
+            sudo apt-add-repository ppa:lttng/stable-2.12
+            sudo apt-get update
+            sudo apt-get install -y lttng-tools babeltrace liblttng-ust-dev lttng-modules-dkms- \
+                   git curl libssl-dev make automake autoconf libncurses-dev gcc g++ default-jdk \
+                   unixodbc-dev \
+                   libxml2-utils libsctp-dev lksctp-tools software-properties-common shellcheck
+            export KERL_CONFIGURE_OPTIONS="--with-dynamic-trace=lttng ${KERL_CONFIGURE_OPTIONS}"
+          fi
+
+          target_dir="$HOME/OTP/${type}-${otp_vsn}"
+          sudo mkdir -p "$target_dir"
+          sudo chmod 777 "$target_dir"
+          ./kerl update releases
+          ./kerl build-install "${otp_vsn}" "${type}-${otp_vsn}" "$target_dir"
+          tar czvf "${type}-${otp_vsn}-${os}.tar.gz" "$target_dir" "$HOME/.kerl"
+
+      - name: cat failed build log
+        if: failure()
+        run: |
+           cat ~/.kerl/builds/*/*.log
+
+      - name: Archive failed build log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log-${{matrix.otp}}-${{matrix.os}}-${{matrix.type}}
+          path: ~/.kerl/builds/${{matrix.otp}}/otp_build_${{matrix.otp}}.log
+          retention-days: 1
+
+      - uses: actions/upload-artifact@v4
+        #if: startsWith(github.ref, 'refs/tags/')
+        with:
+          name: package-${{ matrix.type }}-${{ matrix.otp }}-${{ matrix.os }}
+          path: |
+            *.tar.gz
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      checks: read
+      actions: write
+      contents: write
+    needs:
+      - linux
+    #if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - id: upload-release-asset
+        uses: softprops/action-gh-release@v2
+        with:
+          name: kerl otp ${{ inputs.tag_name }} Released
+          draft: true
+          prerelease: false
+          tag_name: ${{ inputs.tag_name }}
+          files: |
+            *.tar.gz
+
