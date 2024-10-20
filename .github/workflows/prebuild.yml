@@ -25,7 +25,7 @@ jobs:
           - 27.1
         os:
           - ubuntu-22.04
-          - ubuntu-20.04
+          #- ubuntu-20.04
         type:
           - otp
           - "otp-lttng"
