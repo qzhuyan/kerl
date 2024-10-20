@@ -1,13 +1,16 @@
 name: prebuild
 
 on:
-  push:
   workflow_dispatch:
     inputs:
       dryrun:
-        default: true
+        default: false
         required: false
         type: boolean
+      tag_name:
+        default: test
+        required: false
+        type: string
 
 jobs:
   linux:
@@ -111,10 +114,10 @@ jobs:
       - id: upload-release-asset
         uses: softprops/action-gh-release@v2
         with:
-          name: kerl otp ${{ github.ref_name }} Released
+          name: kerl otp ${{ inputs.tag_name }} Released
           draft: true
           prerelease: false
-          tag_name: testing
+          tag_name: ${{ inputs.tag_name }}
           files: |
             *.tar.gz
 
