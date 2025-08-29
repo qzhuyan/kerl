@@ -81,7 +81,7 @@ jobs:
           sudo chmod 777 "$target_dir"
           ./kerl update releases
           ./kerl build-install "${otp_vsn}" "${type}-${otp_vsn}" "$target_dir"
-          tar czvf "${type}-${otp_vsn}-${os}.tar.gz" "$target_dir" "$HOME/.kerl"
+          tar czvf "${type}-${otp_vsn}-${os}-${arch}.tar.gz" "$target_dir" "$HOME/.kerl"
 
       - name: cat failed build log
         if: failure()
