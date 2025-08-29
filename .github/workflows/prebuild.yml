@@ -14,7 +14,7 @@ on:
 
 jobs:
   linux:
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}${{ matrix.arch == 'arm64' && '-arm' || '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -22,7 +22,10 @@ jobs:
           - 24.3.4.17
           - 25.3.2.13
           - 26.2.5.3
-          - 27.1
+          - 27.3.4.2
+        arch:
+          - amd64
+          - arm64
         os:
           - ubuntu-22.04
           #- ubuntu-20.04
@@ -46,10 +49,11 @@ jobs:
           otp_vsn: ${{ matrix.otp }}
           os: ${{ matrix.os }}
           type: ${{ matrix.type }}
+          arch: ${{ matrix.arch }}
         run: |
           ./kerl update releases
           cp ./kerl $HOME/.kerl/
-          tar czvf "${type}-${otp_vsn}-${os}.tar.gz" -C $HOME .kerl
+          tar czvf "${type}-${otp_vsn}-${os}-#{arch}.tar.gz" -C $HOME .kerl
 
       - name: Build ${{ matrix.otp  }}
         if: ${{ ! inputs.dryrun }}
