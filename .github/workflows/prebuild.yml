@@ -23,6 +23,7 @@ jobs:
           - 25.3.2.13
           - 26.2.5.14
           - 27.3.4.2
+          - 24.3.4.17-hack1
         arch:
           - amd64
           - arm64
@@ -36,6 +37,9 @@ jobs:
           - type: "otp-lttng"
             os: ubuntu-22.04
             otp: 24.3.4.17
+          - type: "otp-lttng"
+            os: ubuntu-22.04
+            otp: 24.3.4.17-hack1
           - type: "otp-lttng"
             os: ubuntu-22.04
             otp: 25.3.2.13
@@ -80,7 +84,11 @@ jobs:
           sudo mkdir -p "$target_dir"
           sudo chmod 777 "$target_dir"
           ./kerl update releases
-          ./kerl build-install "${otp_vsn}" "${type}-${otp_vsn}" "$target_dir"
+          if [[ "$otp_vsn" == "24.3.4.17-hack1" ]]; then
+            ./kerl build-install git "https://github.com/qzhuyan/otp.git" "dev/william/avoid-normal-port-use-sch-polling" "${type}-${otp_vsn}" "$target_dir"
+          else
+            ./kerl build-install "${otp_vsn}" "${type}-${otp_vsn}" "$target_dir"
+          fi
           tar czvf "${type}-${otp_vsn}-${os}-${arch}.tar.gz" "$target_dir" "$HOME/.kerl"
 
       - name: cat failed build log
